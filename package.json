@@ -6,6 +6,7 @@
   "dependencies": {
     "esm": "^3.2.25",
     "lodash": "^4.17.21",
+    "moment": "^2.29.4",
     "read-last-lines": "^1.8.0"
   }
 }

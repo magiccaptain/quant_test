@@ -91,6 +91,10 @@ function parseEntrusts(filename) {
       if (entrust.ticker.startsWith("60")) {
         entrust.market = "SH";
       }
+
+      if (entrust.ticker.startsWith("688")) {
+        entrust.market = "SH";
+      }
     }
 
     if (ticker && entrust.market) {
@@ -101,6 +105,33 @@ function parseEntrusts(filename) {
   return entrusts;
 }
 
+function genTargets() {
+  const entrusts1 = parseEntrusts("./target.csv");
+
+  const trade_list = Object.keys(entrusts1)
+    .map((ticker) => {
+      const entrust = entrusts1[ticker];
+
+      return {
+        ticker,
+        market: entrust.market,
+        quantity: Math.abs(entrust.qty),
+        side: "SELL",
+      };
+    })
+    .filter((t) => t.quantity != 0);
+
+  const params = JSON.stringify({
+    start_time: "11:20:00",
+    end_time: "11:40:00",
+    trade_list,
+  });
+
+  console.log(params);
+}
+
+genTargets();
+
 function main() {
   const entrusts1 = parseEntrusts("./target.csv");
 
@@ -108,34 +139,21 @@ function main() {
 
   const entrusts2 = parseEntrusts("./target2.csv");
 
-  const trade_list = Object.keys(entrusts1).map((ticker) => {
-    const entrust = entrusts1[ticker];
+  const trade_list = Object.keys(entrusts2)
+    .map((ticker) => {
+      const entrust2 = entrusts2[ticker];
+      const entrust1 = entrusts1[ticker];
 
-    return {
-      ticker,
-      market: entrust.market,
-    };
-  });
+      const quantity = entrust1 ? entrust2.qty - entrust1.qty : entrust2.qty;
 
-  // const trade_list = Object.keys(entrusts2)
-  //   .map((ticker) => {
-  //     const entrust2 = entrusts2[ticker];
-  //     const entrust1 = entrusts1[ticker];
-
-  //     if (ticker === "300363") {
-  //       console.log(entrust2, entrust1);
-  //     }
-
-  //     const quantity = entrust1 ? entrust2.qty - entrust1.qty : entrust2.qty;
-
-  //     return {
-  //       ticker,
-  //       market: entrust2.market,
-  //       quantity: Math.abs(quantity * scalar),
-  //       side: quantity > 0 ? "BUY" : "SELL",
-  //     };
-  //   })
-  //   .filter((e) => e.quantity != 0);
+      return {
+        ticker,
+        market: entrust2.market,
+        quantity: Math.abs(quantity * scalar),
+        side: quantity < 0 ? "BUY" : "SELL",
+      };
+    })
+    .filter((e) => e.quantity != 0);
 
   // const trade_list = Object.keys(entrusts1)
   //   .map((ticker) => {
